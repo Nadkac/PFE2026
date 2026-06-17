@@ -24,6 +24,10 @@
 import time
 from core.control.controlers.controller_base import ControllerBase
 from core.control.IO_drivers.motor_command import MotorCommand
+import json
+import cv2
+from pathlib import Path
+from cnn_utils import extract_frame_from_state
 
 # Mapping des actions simples (D-pad) vers throttle/steering
 _ACTION_MAP = {
@@ -68,6 +72,15 @@ class ManualController(ControllerBase):
         self._desired_heading = 0.0
         self.heading_kp = 2.1         # Gain proportionnel (tunable via UI)
         self.heading_max_correction = 9  # Correction max en unités de vitesse
+
+        # --- Enregistrement dataset CNN ---
+        self.record_cnn_dataset = False
+        self.dataset_dir = Path("cnn_dataset")
+        self.images_dir = self.dataset_dir / "images"
+        self.labels_path = self.dataset_dir / "labels.jsonl"
+        self._sample_id = 0
+        self._record_every_n_ticks = 2
+        self._record_tick = 0
 
     @property
     def name(self):
@@ -254,6 +267,7 @@ class ManualController(ControllerBase):
                 self.default_speed, self.turn_speed, self.steering_ratio
             )
             left, right = self.apply_heading_correction(state, base_left, base_right)
+            self._record_cnn_sample(state, left, right)
             return MotorCommand.make_speed(left, right)
 
         # 4. Rotation sur place avec PWM logiciel (A/D seuls)
@@ -261,7 +275,9 @@ class ManualController(ControllerBase):
             self._turn_tick += 1
             active = (self._turn_tick % (self.turn_duty_on + self.turn_duty_off)) < self.turn_duty_on
             if not active:
+                self._record_cnn_sample(state, 0, 0)
                 return MotorCommand.stop()
+            self._record_cnn_sample(state, left, right)
             return MotorCommand.make_speed(
                 self._steering * self.turn_speed,
                 -self._steering * self.turn_speed
@@ -274,7 +290,9 @@ class ManualController(ControllerBase):
         )
 
         if left == 0 and right == 0:
+            self._record_cnn_sample(state, 0, 0)
             return MotorCommand.stop()
+        self._record_cnn_sample(state, left, right)
         return MotorCommand.make_speed(left, right)
 
     # ------------------------------------------------------------------
@@ -316,3 +334,49 @@ class ManualController(ControllerBase):
             self.turn_duty_on = kwargs["turn_duty_on"]
         if "turn_duty_off" in kwargs:
             self.turn_duty_off = kwargs["turn_duty_off"]
+
+    # ligne de code PFE E2026
+    def enable_cnn_recording(self, dataset_dir="cnn_dataset", every_n_ticks=2):
+        """
+        Active l'enregistrement des images + commandes moteur.
+        every_n_ticks=2 à 30 Hz donne environ 15 images/s.
+        """
+        self.record_cnn_dataset = True
+        self.dataset_dir = Path(dataset_dir)
+        self.images_dir = self.dataset_dir / "images"
+        self.labels_path = self.dataset_dir / "labels.jsonl"
+        self.images_dir.mkdir(parents=True, exist_ok=True)
+        self._record_every_n_ticks = max(1, int(every_n_ticks))
+        print(f"[ManualController] Recording CNN activé: {self.dataset_dir}")
+
+    def disable_cnn_recording(self):
+        self.record_cnn_dataset = False
+        print("[ManualController] Recording CNN désactivé")
+
+    def _record_cnn_sample(self, state, left_speed, right_speed):
+        if not self.record_cnn_dataset:
+            return
+
+        self._record_tick += 1
+        if self._record_tick % self._record_every_n_ticks != 0:
+            return
+
+        frame = extract_frame_from_state(state)
+        if frame is None:
+            return
+
+        img_name = f"img_{self._sample_id:06d}.jpg"
+        img_path = self.images_dir / img_name
+
+        cv2.imwrite(str(img_path), frame)
+
+        label = {
+            "image": f"images/{img_name}",
+            "left": max(-1.0, min(1.0, left_speed / 50.0)),
+            "right": max(-1.0, min(1.0, right_speed / 50.0)),
+        }
+
+        with open(self.labels_path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(label) + "\n")
+
+        self._sample_id += 1
