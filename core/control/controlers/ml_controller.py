@@ -13,7 +13,7 @@ import collections
 import numpy as np
 from core.control.controlers.controller_base import ControllerBase
 from core.control.IO_drivers.motor_command import MotorCommand
-
+from cnn_utils import extract_frame_from_state, preprocess_frame
 
 class MLController(ControllerBase):
     """Contrôleur basé sur un réseau de neurones MLP.
@@ -399,98 +399,144 @@ class MLController(ControllerBase):
         # 4. Appliquer la normalisation z-score
         return self._apply_zscore(full_vector)
 
-    def _inference(self, input_vector: np.ndarray) -> np.ndarray:
-        """Effectue l'inférence avec le modèle TFLite.
+    # def _inference(self, input_vector: np.ndarray) -> np.ndarray:
+    #     """Effectue l'inférence avec le modèle TFLite.
 
-        Args:
-            input_vector: Vecteur d'état normalisé (shape: [state_dim])
+    #     Args:
+    #         input_vector: Vecteur d'état normalisé (shape: [state_dim])
 
-        Returns:
-            np.ndarray: Commandes moteur normalisées [left, right] dans [-1, 1]
-        """
-        # Reshape pour batch de 1
-        input_data = input_vector.reshape(1, -1).astype(np.float32)
+    #     Returns:
+    #         np.ndarray: Commandes moteur normalisées [left, right] dans [-1, 1]
+    #     """
+    #     # Reshape pour batch de 1
+    #     input_data = input_vector.reshape(1, -1).astype(np.float32)
 
-        # Set input tensor
-        self._interpreter.set_tensor(self._input_details[0]['index'], input_data)
+    #     # Set input tensor
+    #     self._interpreter.set_tensor(self._input_details[0]['index'], input_data)
 
-        # Run inference
+    #     # Run inference
+    #     self._interpreter.invoke()
+
+    #     # Get output
+    #     output = self._interpreter.get_tensor(self._output_details[0]['index'])
+
+    #     return output[0]  # Retirer la dimension batch
+
+    def _inference(self, frame) -> np.ndarray:
+        input_shape = self._input_details[0]["shape"]
+        input_data = preprocess_frame(frame, input_shape)
+
+        self._interpreter.set_tensor(self._input_details[0]["index"], input_data)
         self._interpreter.invoke()
 
-        # Get output
-        output = self._interpreter.get_tensor(self._output_details[0]['index'])
-
-        return output[0]  # Retirer la dimension batch
-
+        output = self._interpreter.get_tensor(self._output_details[0]["index"])
+        return output[0]
+    
     @property
     def name(self):
         return "ml_controller"
 
+    # def step(self, state):
+    #     """Calcule la commande moteur via le modèle MLP.
+
+    #     Args:
+    #         state (SensorState): État courant des capteurs.
+
+    #     Returns:
+    #         MotorCommand: Commande moteur calculée.
+    #     """
+    #     import time as _time
+    #     t0 = _time.perf_counter()
+
+    #     # 1. Vectoriser l'état
+    #     input_vector = self._build_state_vector(state)
+    #     self._last_input = input_vector
+
+    #     # 2. Inférence dans le modèle
+    #     if self._interpreter is not None:
+    #         try:
+    #             output = self._inference(input_vector)
+    #             self._last_output = output
+    #             self._inference_count += 1
+
+    #             # Diagnostic aux premiers ticks
+    #             if self._inference_count <= 3:
+    #                 print(f"[MLController] Tick {self._inference_count}: "
+    #                       f"input_shape={input_vector.shape}, "
+    #                       f"input_range=[{input_vector.min():.2f}, {input_vector.max():.2f}], "
+    #                       f"output=[{output[0]:.4f}, {output[1]:.4f}]")
+    #                 if state.ir_sensors:
+    #                     ir = state.ir_sensors
+    #                     print(f"  IR raw: fr={ir[0]}, br={ir[1]}, bkr={ir[2]}, "
+    #                           f"bl={ir[3]}, bkl={ir[4]}, fl={ir[5]}")
+
+    #             # Debug logging périodique
+    #             if self._debug_enabled and self._inference_count % self._debug_interval == 0:
+    #                 step_ms = (_time.perf_counter() - t0) * 1000
+    #                 output_delta = float(np.abs(output - self._prev_output).sum()) if self._prev_output is not None else 0.0
+    #                 self._debug_log.append({
+    #                     'tick': self._inference_count,
+    #                     'override': False,
+    #                     'step_ms': round(step_ms, 1),
+    #                     'ir': [round(float(x), 1) for x in state.ir_sensors] if state.ir_sensors else None,
+    #                     'line_offset': round(float(state.line_offset), 3) if getattr(state, 'line_offset', None) is not None else None,
+    #                     **{k: round(v, 4) for k, v in self._last_step_debug.items()},
+    #                     'output': [round(float(output[0]), 4), round(float(output[1]), 4)],
+    #                     'output_delta': round(output_delta, 4),
+    #                     'input_range': [round(float(input_vector.min()), 2), round(float(input_vector.max()), 2)],
+    #                 })
+    #             self._prev_output = output.copy()
+
+    #             # Dénormaliser: [-1, 1] -> [-MOTOR_SPEED_MAX, MOTOR_SPEED_MAX]
+    #             left_speed = float(output[0]) * self.MOTOR_SPEED_MAX
+    #             right_speed = float(output[1]) * self.MOTOR_SPEED_MAX
+
+    #         except Exception as e:
+    #             print(f"[MLController] Erreur d'inférence: {e}")
+    #             left_speed, right_speed = 0, 0
+    #     else:
+    #         # Fallback: arrêt si pas de modèle
+    #         left_speed, right_speed = 0, 0
+
+    #     # 3. Retourner la commande
+    #     return MotorCommand.make_speed(left_speed, right_speed)
+
     def step(self, state):
-        """Calcule la commande moteur via le modèle MLP.
-
-        Args:
-            state (SensorState): État courant des capteurs.
-
-        Returns:
-            MotorCommand: Commande moteur calculée.
         """
-        import time as _time
-        t0 = _time.perf_counter()
+        Contrôleur CNN :
+        image caméra → CNN TFLite → [left_motor, right_motor]
+        """
+        frame = extract_frame_from_state(state)
 
-        # 1. Vectoriser l'état
-        input_vector = self._build_state_vector(state)
-        self._last_input = input_vector
+        if frame is None:
+            print("[MLController] Aucune image caméra disponible")
+            return MotorCommand.stop()
 
-        # 2. Inférence dans le modèle
-        if self._interpreter is not None:
-            try:
-                output = self._inference(input_vector)
-                self._last_output = output
-                self._inference_count += 1
+        if self._interpreter is None:
+            return MotorCommand.stop()
 
-                # Diagnostic aux premiers ticks
-                if self._inference_count <= 3:
-                    print(f"[MLController] Tick {self._inference_count}: "
-                          f"input_shape={input_vector.shape}, "
-                          f"input_range=[{input_vector.min():.2f}, {input_vector.max():.2f}], "
-                          f"output=[{output[0]:.4f}, {output[1]:.4f}]")
-                    if state.ir_sensors:
-                        ir = state.ir_sensors
-                        print(f"  IR raw: fr={ir[0]}, br={ir[1]}, bkr={ir[2]}, "
-                              f"bl={ir[3]}, bkl={ir[4]}, fl={ir[5]}")
+        try:
+            output = self._inference(frame)
 
-                # Debug logging périodique
-                if self._debug_enabled and self._inference_count % self._debug_interval == 0:
-                    step_ms = (_time.perf_counter() - t0) * 1000
-                    output_delta = float(np.abs(output - self._prev_output).sum()) if self._prev_output is not None else 0.0
-                    self._debug_log.append({
-                        'tick': self._inference_count,
-                        'override': False,
-                        'step_ms': round(step_ms, 1),
-                        'ir': [round(float(x), 1) for x in state.ir_sensors] if state.ir_sensors else None,
-                        'line_offset': round(float(state.line_offset), 3) if getattr(state, 'line_offset', None) is not None else None,
-                        **{k: round(v, 4) for k, v in self._last_step_debug.items()},
-                        'output': [round(float(output[0]), 4), round(float(output[1]), 4)],
-                        'output_delta': round(output_delta, 4),
-                        'input_range': [round(float(input_vector.min()), 2), round(float(input_vector.max()), 2)],
-                    })
-                self._prev_output = output.copy()
+            self._last_output = output
+            self._inference_count += 1
 
-                # Dénormaliser: [-1, 1] -> [-MOTOR_SPEED_MAX, MOTOR_SPEED_MAX]
-                left_speed = float(output[0]) * self.MOTOR_SPEED_MAX
-                right_speed = float(output[1]) * self.MOTOR_SPEED_MAX
+            left_speed = float(output[0]) * self.MOTOR_SPEED_MAX
+            right_speed = float(output[1]) * self.MOTOR_SPEED_MAX
 
-            except Exception as e:
-                print(f"[MLController] Erreur d'inférence: {e}")
-                left_speed, right_speed = 0, 0
-        else:
-            # Fallback: arrêt si pas de modèle
-            left_speed, right_speed = 0, 0
+            if self._inference_count <= 3:
+                print(
+                    f"[MLController CNN] output="
+                    f"[{output[0]:.3f}, {output[1]:.3f}] "
+                    f"speed=[{left_speed:.1f}, {right_speed:.1f}]"
+                )
 
-        # 3. Retourner la commande
-        return MotorCommand.make_speed(left_speed, right_speed)
+            return MotorCommand.make_speed(left_speed, right_speed)
 
+        except Exception as e:
+            print(f"[MLController CNN] Erreur d'inférence: {e}")
+            return MotorCommand.stop()
+        
     def start(self):
         """Démarre le contrôleur ML."""
         self._inference_count = 0
