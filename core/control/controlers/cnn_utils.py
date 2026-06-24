@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 # cnn_utils.py
 import cv2
 import numpy as np
