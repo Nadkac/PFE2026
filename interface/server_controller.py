@@ -20,8 +20,8 @@ from interface.onglet_control import render_control_tab
 from interface.onglet_vision import render_vision_tab
 from interface.onglet_pid import render_pid_tab
 from interface.onglet_template import render_template_tab  # Exemple d'onglet template générique
-from core.control.legacy.line_following_pid import PIDController
-from core.control.legacy.line_following_state_machine import StepByStepStateMachine
+#com_nad from core.control.legacy.line_following_pid import PIDController
+#com_nad from core.control.legacy.line_following_state_machine import StepByStepStateMachine
 from core.control.control_manager import ControlManager
 from core.control.controlers.manual_controller import ManualController
 from core.control.IO_drivers.motor_command import MotorCommand
