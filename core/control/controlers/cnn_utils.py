@@ -6,17 +6,21 @@ import numpy as np
 
 class Cnn_Utils:
 
+
     def extract_frame_from_state(state):
-        """
-        Essaie de récupérer l'image caméra depuis SensorState.
-        Adapte les noms si votre projet utilise un autre attribut.
-        """
-        for attr in ["frame", "camera_frame", "image", "latest_frame", "raw_frame"]:
-            if hasattr(state, attr):
-                frame = getattr(state, attr)
-                if frame is not None:
-                    return frame
-        return None
+        return state.frame
+
+    # def extract_frame_from_state(state):
+    #     """
+    #     Essaie de récupérer l'image caméra depuis SensorState.
+    #     Adapte les noms si votre projet utilise un autre attribut.
+    #     """
+    #     for attr in ["frame", "camera_frame", "image", "latest_frame", "raw_frame"]:
+    #         if hasattr(state, attr):
+    #             frame = getattr(state, attr)
+    #             if frame is not None:
+    #                 return frame
+    #     return None
 
 
     def preprocess_frame(frame, input_shape):
