@@ -27,7 +27,7 @@ from core.control.IO_drivers.motor_command import MotorCommand
 import json
 import cv2
 from pathlib import Path
-from cnn_utils import extract_frame_from_state
+from core.control.controlers.cnn_utils import extract_frame_from_state
 
 # Mapping des actions simples (D-pad) vers throttle/steering
 _ACTION_MAP = {

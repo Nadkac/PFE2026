@@ -13,7 +13,7 @@ import collections
 import numpy as np
 from core.control.controlers.controller_base import ControllerBase
 from core.control.IO_drivers.motor_command import MotorCommand
-from cnn_utils import extract_frame_from_state, preprocess_frame
+from core.control.controlers.cnn_utils import extract_frame_from_state, preprocess_frame
 
 class MLController(ControllerBase):
     """Contrôleur basé sur un réseau de neurones MLP.
