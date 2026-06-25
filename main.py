@@ -154,7 +154,7 @@ def bootstrap():
     from core.control.control_manager import ControlManager
     control_manager = ControlManager(robot=zumi, vision_pipeline=vision_pipeline)
 
-    #com_nad from core.control.legacy.line_follower_controller import LineFollowerController
+    from core.control.legacy.line_follower_controller import LineFollowerController
     from core.control.controlers.manual_controller import ManualController
     from core.control.controlers.ml_controller import MLController
     from core.control.controlers.pid_ir_controller import PIDIRController
