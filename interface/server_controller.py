@@ -270,26 +270,63 @@ class controller:
         else:
             self._consecutive_stop_samples = 0
 
-        try:
-            adapter = self._get_ml_adapter(state)
-            vector = self._vectorize_state_with_adapter(state, adapter)
-            label = adapter.encode_label(
-                command.left_speed, command.right_speed
-            ).tolist()
+        # try:
+        #     adapter = self._get_ml_adapter(state)
+        #     vector = self._vectorize_state_with_adapter(state, adapter)
+        #     label = adapter.encode_label(
+        #         command.left_speed, command.right_speed
+        #     ).tolist()
 
-            if vector is None or label is None:
-                return
+        #     if vector is None or label is None:
+        #         return
 
-            import numpy as np
-            v_array = np.array(vector)
-            l_array = np.array(label)
-            v_array = self._apply_sampling_kill(v_array, adapter)
+        #     import numpy as np
+        #     v_array = np.array(vector)
+        #     l_array = np.array(label)
+        #     v_array = self._apply_sampling_kill(v_array, adapter)
 
-            if adapter.validate_state_vector(v_array) and adapter.validate_label_vector(l_array):
-                self.sampling_vectors.append(v_array.tolist())
-                self.sampling_labels.append(label)
+        #     if adapter.validate_state_vector(v_array) and adapter.validate_label_vector(l_array):
+        #         self.sampling_vectors.append(v_array.tolist())
+        #         self.sampling_labels.append(label)
+        # except Exception as e:
+        #     print("[Sampling] Erreur callback contrôleur auto: {}".format(e))
+
+
+
+        # 1. Dossier de destination
+            dataset_dir = "dataset_cnn"
+            os.makedirs(dataset_dir, exist_ok=True)
+            
+            # 2. Sauvegarde de l'image (Bitmap -> JPG)
+            # On utilise le temps pour un nom unique
+            timestamp = int(time.time() * 1000)
+            image_filename = f"img_{timestamp}.jpg"
+            image_filename = f"frame_{timestamp}.bmp" # Extension .bmp
+            image_path = os.path.join(dataset_dir, image_filename)
+
+            # cv2.imwrite détecte automatiquement l'extension .bmp et encode l'image sans perte
+            cv2.imwrite(image_path, state.frame)
+            
+            # 3. Sauvegarde du label dans le fichier jsonl
+            label_entry = {
+                "image": image_filename,
+                "left_speed": command.left_speed,
+                "right_speed": command.right_speed,
+                "timestamp": timestamp
+            }
+            
+            with open(os.path.join(dataset_dir, "labels.jsonl"), "a") as f:
+                f.write(json.dumps(label_entry) + "\n")
+                
+            # Note : self.sampling_vectors et self.sampling_labels ne sont plus utilisés,
+            # car vos données sont maintenant directement sur le disque.
+            
         except Exception as e:
-            print("[Sampling] Erreur callback contrôleur auto: {}".format(e))
+            print("[Sampling CNN] Erreur lors de la capture : {}".format(e))
+
+
+
+
 
 # ----------------------------------------------------------------------------
 #            Fonctions de callback pour les actions de vision
