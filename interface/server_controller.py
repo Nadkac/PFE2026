@@ -2030,34 +2030,64 @@ class controller:
         return jsonify({'controllers': sorted(self.control_manager._controllers.keys())})
 
     def download_sampling(self):
-        """Crée un ZIP avec captures.jsonl et labels.jsonl des échantillons."""
-        if not self.sampling_vectors or not self.sampling_labels:
-            return jsonify({'error': 'no samples'}), 404
+        # """Crée un ZIP avec captures.jsonl et labels.jsonl des échantillons."""
+        # if not self.sampling_vectors or not self.sampling_labels:
+        #     return jsonify({'error': 'no samples'}), 404
 
-        import io
-        import zipfile
+        # import io
+        # import zipfile
 
-        buf = io.BytesIO()
-        with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as zf:
-            captures_lines = [json.dumps(v) for v in self.sampling_vectors]
-            labels_lines = [json.dumps(v) for v in self.sampling_labels]
-            zf.writestr('captures.jsonl', '\n'.join(captures_lines))
-            zf.writestr('labels.jsonl', '\n'.join(labels_lines))
+        # buf = io.BytesIO()
+        # with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as zf:
+        #     captures_lines = [json.dumps(v) for v in self.sampling_vectors]
+        #     labels_lines = [json.dumps(v) for v in self.sampling_labels]
+        #     zf.writestr('captures.jsonl', '\n'.join(captures_lines))
+        #     zf.writestr('labels.jsonl', '\n'.join(labels_lines))
 
-        # Pour des fin de validation on s'attend a un vecteur capteur de 20 et un vecteur de label de 2
-        print("[Exception][ServerController] Dimension vecteur de capteurs {}".format(len(self.sampling_vectors[0]) if self.sampling_vectors else 0))
-        print("[Exception][ServerController] Dimension vecteur de labels {}".format(len(self.sampling_labels[0]) if self.sampling_labels else 0))
-        print("[Exception][ServerController] Nombre d'échantillons capturés: {}".format(len(self.sampling_vectors)))
+        # # Pour des fin de validation on s'attend a un vecteur capteur de 20 et un vecteur de label de 2
+        # print("[Exception][ServerController] Dimension vecteur de capteurs {}".format(len(self.sampling_vectors[0]) if self.sampling_vectors else 0))
+        # print("[Exception][ServerController] Dimension vecteur de labels {}".format(len(self.sampling_labels[0]) if self.sampling_labels else 0))
+        # print("[Exception][ServerController] Nombre d'échantillons capturés: {}".format(len(self.sampling_vectors)))
 
-        buf.seek(0)
+        # buf.seek(0)
+        # ts = time.strftime('%Y%m%d_%H%M%S')
+        # zip_name = 'sampling_{}.zip'.format(ts)
+
+        # return Response(
+        #     buf.getvalue(),
+        #     mimetype='application/zip',
+        #     headers={'Content-Disposition': 'attachment; filename={}'.format(zip_name)}
+        # )
+   
+        """Crée un ZIP du dossier dataset_cnn et le renvoie en téléchargement."""
+        dataset_dir = "dataset_cnn"
+        
+        if not os.path.exists(dataset_dir) or not os.listdir(dataset_dir):
+            return jsonify({'error': 'no samples found in dataset_cnn'}), 404
+
+        import shutil
+        
+        # 1. On crée une archive temporaire du dossier
         ts = time.strftime('%Y%m%d_%H%M%S')
-        zip_name = 'sampling_{}.zip'.format(ts)
+        zip_name = 'sampling_cnn_{}'.format(ts)
+        
+        # shutil.make_archive crée un fichier .zip à partir du dossier
+        # Il crée un fichier nommé 'sampling_cnn_...zip'
+        shutil.make_archive(zip_name, 'zip', dataset_dir)
+        
+        # 2. On lit le fichier généré pour l'envoyer au navigateur
+        with open(zip_name + ".zip", "rb") as f:
+            file_data = f.read()
+
+        # 3. On nettoie le fichier temporaire sur le disque
+        os.remove(zip_name + ".zip")
 
         return Response(
-            buf.getvalue(),
+            file_data,
             mimetype='application/zip',
-            headers={'Content-Disposition': 'attachment; filename={}'.format(zip_name)}
+            headers={'Content-Disposition': 'attachment; filename={}.zip'.format(zip_name)}
         )
+
 
     def start_controller(self):
         """Démarre le contrôleur LineFollower (nouvelle architecture standardisée)."""
