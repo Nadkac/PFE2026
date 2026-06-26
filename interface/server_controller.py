@@ -270,7 +270,7 @@ class controller:
         else:
             self._consecutive_stop_samples = 0
 
-        # try:
+        #try:
         #     adapter = self._get_ml_adapter(state)
         #     vector = self._vectorize_state_with_adapter(state, adapter)
         #     label = adapter.encode_label(
@@ -292,8 +292,8 @@ class controller:
         #     print("[Sampling] Erreur callback contrôleur auto: {}".format(e))
 
 
-
-        # 1. Dossier de destination
+        try:
+            # 1. Dossier de destination
             dataset_dir = "dataset_cnn"
             os.makedirs(dataset_dir, exist_ok=True)
             
