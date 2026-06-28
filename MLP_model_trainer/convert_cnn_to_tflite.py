@@ -34,7 +34,7 @@ def build_keras_cnn():
 
 
 def convert():
-    checkpoint_path = Path("cnn_checkpoints/best_cnn.pt")
+    checkpoint_path = Path("best_cnn.pt")
     export_dir = Path("cnn_export")
     export_dir.mkdir(exist_ok=True)
 
