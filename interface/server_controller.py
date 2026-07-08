@@ -331,7 +331,7 @@ class controller:
             }
             
             labels_file_path = os.path.join(self.dataset_dir, "labels.jsonl")
-            with open(os.path.join(dataset_dir, "labels.jsonl"), "a") as f:
+            with open(labels_file_path, "a") as f:
                 f.write(json.dumps(label_entry) + "\n")
                 
             
