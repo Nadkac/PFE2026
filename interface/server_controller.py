@@ -14,6 +14,10 @@ import json
 
 from flask import Flask, Response, request, jsonify, send_from_directory, url_for
 
+import shutil
+
+from datetime import datetime 
+
 
 from interface.onglet_acceuil import render_accueil_tab
 from interface.onglet_control import render_control_tab
@@ -144,9 +148,21 @@ class controller:
         self.step_machine = None
         self.step_mode_active = False
         self.step_mode_thread = None
+        
+        ## ANCIENNE METHODE DE stocker les CAPTURE D'IMAGE 
         # Dossier pour sauvegarder les captures d'images
-        self.CAPTURE_DIR = os.path.join(self.app.static_folder, 'captured_images')
-        os.makedirs(self.CAPTURE_DIR, exist_ok=True)
+        #self.CAPTURE_DIR = os.path.join(self.app.static_folder, 'captured_images')
+        #os.makedirs(self.CAPTURE_DIR, exist_ok=True)
+       
+        # Nouvelle méthode : Création d'un dossier unique par session
+        session_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+        self.dataset_dir = os.path.join("dataset_cnn", f"session_{session_id}")
+        os.makedirs(self.dataset_dir, exist_ok=True)
+        
+        print(f"[Sampling] Session initialisée dans : {self.dataset_dir}")
+       
+       
+       
         # Échantillonnage des données des capteurs
         self.debug_control_sampling = False  # Désactivé par défaut pour réduire l'overhead CPU
         self.sampling_active = False
@@ -172,7 +188,7 @@ class controller:
         self.fsm_overlay_enabled = False
 
     def attach_pipeline_vision(self, pipeline):
-        pipeline.attach_capture_dir(self.CAPTURE_DIR)
+        pipeline.attach_capture_dir(self.dataset_dir)
         self.vision_pipeline = pipeline
         self.vision_pipeline.debug = self.debug
         self._ml_classes = self._infer_ml_classes()
@@ -294,15 +310,14 @@ class controller:
 
         try:
             # 1. Dossier de destination
-            dataset_dir = "dataset_cnn"
-            os.makedirs(dataset_dir, exist_ok=True)
+            #dataset_dir = "dataset_cnn"
+            #os.makedirs(dataset_dir, exist_ok=True)
             
             # 2. Sauvegarde de l'image (Bitmap -> JPG)
             # On utilise le temps pour un nom unique
             timestamp = int(time.time() * 1000)
-            image_filename = f"img_{timestamp}.jpg"
             image_filename = f"frame_{timestamp}.bmp" # Extension .bmp
-            image_path = os.path.join(dataset_dir, image_filename)
+            image_path = os.path.join(self.dataset_dir, image_filename)
 
             # cv2.imwrite détecte automatiquement l'extension .bmp et encode l'image sans perte
             cv2.imwrite(image_path, state.frame)
@@ -315,11 +330,10 @@ class controller:
                 "timestamp": timestamp
             }
             
+            labels_file_path = os.path.join(self.dataset_dir, "labels.jsonl")
             with open(os.path.join(dataset_dir, "labels.jsonl"), "a") as f:
                 f.write(json.dumps(label_entry) + "\n")
                 
-            # Note : self.sampling_vectors et self.sampling_labels ne sont plus utilisés,
-            # car vos données sont maintenant directement sur le disque.
             
         except Exception as e:
             print("[Sampling CNN] Erreur lors de la capture : {}".format(e))
@@ -334,7 +348,7 @@ class controller:
 
     # Téléchargement d'une image capturée
     def download_image(self, filename):
-        return send_from_directory(self.CAPTURE_DIR, filename, as_attachment=True)
+        return send_from_directory(self.dataset_dir, filename, as_attachment=True)
 
     def capture_image(self):
         vp = self.vision_pipeline
@@ -352,7 +366,7 @@ class controller:
         # Génération d'un nom de fichier unique
         ts = time.strftime("%Y%m%d-%H%M%S")
         filename = '{}_{}.jpg'.format(ts, uuid.uuid4().hex[:6])
-        save_path = os.path.join(self.CAPTURE_DIR, filename)
+        save_path = os.path.join(self.dataset_dir, filename)
 
         # Sauvegarde directe en BGR (format natif OpenCV)
         ok = cv2.imwrite(save_path, frame_to_save)
@@ -429,7 +443,7 @@ class controller:
         if not filename:
             return jsonify({'error': 'no captured image available. Please capture an image first.'}), 400
 
-        img_path = os.path.join(self.CAPTURE_DIR, filename)
+        img_path = os.path.join(self.dataset_dir, filename)
         if not os.path.exists(img_path):
             return jsonify({'error': 'last captured image not found on server'}), 404
 
@@ -461,7 +475,7 @@ class controller:
                 annotated, _ = VisionPipeline.annotate_detection_result(frame_bgr, detector, approximate_distance=True, detection_result = results)
                 base, ext = os.path.splitext(filename)
                 ann_name = '{}_det_{}{}'.format(base, uuid.uuid4().hex[:6], ext or '.jpg')
-                cv2.imwrite(os.path.join(self.CAPTURE_DIR, ann_name), annotated)
+                cv2.imwrite(os.path.join(self.dataset_dir, ann_name), annotated)
                 annotated_url = url_for('static', filename='captured_images/{}'.format(ann_name))
 
             # Construire le payload pour le frontend
