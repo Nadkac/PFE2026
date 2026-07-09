@@ -2097,7 +2097,7 @@ class controller:
     
         # Lecture et envoi
         with open(zip_name + ".zip", "rb") as f:
-        file_data = f.read()
+            file_data = f.read()
 
         # Nettoyage
         os.remove(zip_name + ".zip")
