@@ -116,4 +116,10 @@ def register_routes(ctrl):
     app.add_url_rule('/bridge/green', 'bridge_green', lambda: ctrl.bridge_green(), methods=['POST'])
     app.add_url_rule('/bridge/red', 'bridge_red', lambda: ctrl.bridge_red(), methods=['POST'])
     app.add_url_rule('/bridge/mode_auto/<etat>', 'bridge_mode_auto', lambda etat: ctrl.bridge_mode_auto(etat), methods=['POST'])
+
+    # --- ROUTE POUR LE TELECHARGEMENT DE LA SESSION D'ENTRAINEMENT --- 
+    app.add_url_rule('/download_session/<session_name>', 
+                     view_func=ctrl.download_sampling, 
+                     methods=['GET'])
+
     return app

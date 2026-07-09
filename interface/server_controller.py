@@ -132,62 +132,6 @@ def controller_list(self):
             return jsonify({'controllers': []})
         return jsonify({'controllers': sorted(self.control_manager._controllers.keys())})
 
-@app.route('/download_session/<session_name>', methods=['GET'])
-def download_sampling(self):
-    # """Crée un ZIP avec captures.jsonl et labels.jsonl des échantillons."""
-    # if not self.sampling_vectors or not self.sampling_labels:
-    #     return jsonify({'error': 'no samples'}), 404
-
-    # import io
-    # import zipfile
-
-    # buf = io.BytesIO()
-    # with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as zf:
-    #     captures_lines = [json.dumps(v) for v in self.sampling_vectors]
-    #     labels_lines = [json.dumps(v) for v in self.sampling_labels]
-    #     zf.writestr('captures.jsonl', '\n'.join(captures_lines))
-    #     zf.writestr('labels.jsonl', '\n'.join(labels_lines))
-
-    # # Pour des fin de validation on s'attend a un vecteur capteur de 20 et un vecteur de label de 2
-    # print("[Exception][ServerController] Dimension vecteur de capteurs {}".format(len(self.sampling_vectors[0]) if self.sampling_vectors else 0))
-    # print("[Exception][ServerController] Dimension vecteur de labels {}".format(len(self.sampling_labels[0]) if self.sampling_labels else 0))
-    # print("[Exception][ServerController] Nombre d'échantillons capturés: {}".format(len(self.sampling_vectors)))
-
-    # buf.seek(0)
-    # ts = time.strftime('%Y%m%d_%H%M%S')
-    # zip_name = 'sampling_{}.zip'.format(ts)
-
-    # return Response(
-    #     buf.getvalue(),
-    #     mimetype='application/zip',
-    #     headers={'Content-Disposition': 'attachment; filename={}'.format(zip_name)}
-    # )
-
-    # Chemin vers le dossier spécifique de la session
-    session_dir = os.path.join("dataset_cnn", session_name)
-
-    if not os.path.exists(session_dir):
-        return jsonify({'error': 'Session non trouvée'}), 404
-
-    # On crée une archive temporaire pour cette session uniquement
-    zip_name = 'download_{}'.format(session_name)
-
-    # shutil.make_archive(nom_fichier, format, dossier_source)
-    shutil.make_archive(zip_name, 'zip', session_dir)
-
-    # Lecture et envoi
-    with open(zip_name + ".zip", "rb") as f:
-        file_data = f.read()
-
-    # Nettoyage
-    os.remove(zip_name + ".zip")
-
-    return Response(
-        file_data,
-        mimetype='application/zip',
-        headers={'Content-Disposition': 'attachment; filename={}.zip'.format(session_name)}
-    )
-
 class controller:
     def __init__(self, zumi, debug=False):
         self.app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
@@ -250,6 +194,8 @@ class controller:
         self.last_captured_filename = None
         # Overlay FSM dans le flux vidéo : activé seulement depuis l'onglet contrôle FSM
         self.fsm_overlay_enabled = False
+        
+        pass
 
     def attach_pipeline_vision(self, pipeline):
         pipeline.attach_capture_dir(self.dataset_dir)
@@ -2109,6 +2055,65 @@ class controller:
         self.sampling_zeroed_groups = groups
         return jsonify({"status": "ok", "zeroed_groups": sorted(self.sampling_zeroed_groups)})
 
+    
+    def download_sampling(session_name):
+        # """Crée un ZIP avec captures.jsonl et labels.jsonl des échantillons."""
+        # if not self.sampling_vectors or not self.sampling_labels:
+        #     return jsonify({'error': 'no samples'}), 404
+
+        # import io
+        # import zipfile
+
+        # buf = io.BytesIO()
+        # with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as zf:
+        #     captures_lines = [json.dumps(v) for v in self.sampling_vectors]
+        #     labels_lines = [json.dumps(v) for v in self.sampling_labels]
+        #     zf.writestr('captures.jsonl', '\n'.join(captures_lines))
+        #     zf.writestr('labels.jsonl', '\n'.join(labels_lines))
+
+        # # Pour des fin de validation on s'attend a un vecteur capteur de 20 et un vecteur de label de 2
+        # print("[Exception][ServerController] Dimension vecteur de capteurs {}".format(len(self.sampling_vectors[0]) if self.sampling_vectors else 0))
+        # print("[Exception][ServerController] Dimension vecteur de labels {}".format(len(self.sampling_labels[0]) if self.sampling_labels else 0))
+        # print("[Exception][ServerController] Nombre d'échantillons capturés: {}".format(len(self.sampling_vectors)))
+
+        # buf.seek(0)
+        # ts = time.strftime('%Y%m%d_%H%M%S')
+        # zip_name = 'sampling_{}.zip'.format(ts)
+
+        # return Response(
+        #     buf.getvalue(),
+        #     mimetype='application/zip',
+        #     headers={'Content-Disposition': 'attachment; filename={}'.format(zip_name)}
+        # )
+
+        # Chemin vers le dossier spécifique de la session
+        session_dir = os.path.join("dataset_cnn", session_name)
+
+        if not os.path.exists(session_dir):
+            return jsonify({'error': 'Session non trouvée'}), 404
+
+        # On crée une archive temporaire pour cette session uniquement
+       zip_base_name = os.path.join("/tmp", f"download_{session_name}")
+    
+        # Création du zip
+        shutil.make_archive(zip_base_name, 'zip', session_dir)
+        
+        zip_file_path = zip_base_name + ".zip"
+
+        # Lecture et envoi
+        with open(zip_file_path, "rb") as f:
+            file_data = f.read()
+
+        # Nettoyage
+        os.remove(zip_file_path)
+
+        return Response(
+            file_data,
+            mimetype='application/zip',
+            headers={'Content-Disposition': f'attachment; filename={session_name}.zip'}
+        )
+
+        pass
     
 
 
