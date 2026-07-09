@@ -162,7 +162,7 @@ class controller:
         #os.makedirs(self.CAPTURE_DIR, exist_ok=True)
        
         # Nouvelle méthode : Création d'un dossier unique par session
-        session_id = datetime.now().strftime("%Y-%m-%d_%Hh%M)
+        session_id = datetime.now().strftime("%Y-%m-%d_%Hh%Mm%S")
         self.dataset_dir = os.path.join("dataset_cnn", f"session_{session_id}")
         os.makedirs(self.dataset_dir, exist_ok=True)
         
