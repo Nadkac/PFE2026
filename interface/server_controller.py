@@ -162,7 +162,7 @@ class controller:
         #os.makedirs(self.CAPTURE_DIR, exist_ok=True)
        
         # Nouvelle méthode : Création d'un dossier unique par session
-        session_id = datetime.now().strftime("%Y-%m-%d_%Hh%M:%S")
+        session_id = datetime.now().strftime("%Y-%m-%d_%Hh%M)
         self.dataset_dir = os.path.join("dataset_cnn", f"session_{session_id}")
         os.makedirs(self.dataset_dir, exist_ok=True)
         
@@ -2087,7 +2087,8 @@ class controller:
         # )
 
         # Chemin vers le dossier spécifique de la session
-        session_dir = os.path.join("dataset_cnn", session_name)
+        base_path = "/home/pi/PFE2026/dataset_cnn"
+        session_dir = os.path.join(base_path, session_name)
 
         if not os.path.exists(session_dir):
             return jsonify({'error': 'Session non trouvée'}), 404
