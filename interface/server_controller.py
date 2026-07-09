@@ -162,7 +162,7 @@ class controller:
         #os.makedirs(self.CAPTURE_DIR, exist_ok=True)
        
         # Nouvelle méthode : Création d'un dossier unique par session
-        session_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+        session_id = datetime.now().strftime("%Y-%m-%d_%Hh%M:%S")
         self.dataset_dir = os.path.join("dataset_cnn", f"session_{session_id}")
         os.makedirs(self.dataset_dir, exist_ok=True)
         
@@ -2093,7 +2093,7 @@ class controller:
             return jsonify({'error': 'Session non trouvée'}), 404
 
         # On crée une archive temporaire pour cette session uniquement
-        zip_base_name = os.path.join("/tmp", f"download_{session_name}")
+       zip_base_name = os.path.join("/tmp", f"download_{session_name}")
     
         # Création du zip
         shutil.make_archive(zip_base_name, 'zip', session_dir)
