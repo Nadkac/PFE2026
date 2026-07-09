@@ -175,7 +175,8 @@ class controller:
         self.manual_turn_speed = TURN_SPEED
         self.last_action = None  # Pour mémoriser la dernière action de contrôle (pour le sampling)
         self.battery_level = None  # Niveau de batterie (si disponible via SensorDriver)
-        
+        self.last_capture_time = 0
+
         # --- CONFIGURATION DU PONT ---
         # ⚠️ REMPLACE CECI PAR L'IP QUE TON ARDUINO A AFFICHÉE
         self.BRIDGE_IP = "192.168.0.218" 
@@ -273,6 +274,14 @@ class controller:
         active = self.control_manager._active_controller
         if active is None:
             return
+
+
+        current_time = time.time() * 1000 # Conversion en ms pour correspondre au timestamp
+        if (current_time - self.last_capture_time) < 100:
+            return # On ignore ce tick car il est trop tôt
+    
+        # On met à jour le compteur seulement si on valide la capture
+        self.last_capture_time = current_time
 
         # Filtrer l'idle prolongé: garder max 10 samples consécutifs à (0,0)
         # pour représenter un arrêt intentionnel sans flood le dataset
@@ -2043,6 +2052,7 @@ class controller:
             return jsonify({'controllers': []})
         return jsonify({'controllers': sorted(self.control_manager._controllers.keys())})
 
+    @app.route('/download_session/<session_name>', methods=['GET'])
     def download_sampling(self):
         # """Crée un ZIP avec captures.jsonl et labels.jsonl des échantillons."""
         # if not self.sampling_vectors or not self.sampling_labels:
@@ -2073,33 +2083,29 @@ class controller:
         #     headers={'Content-Disposition': 'attachment; filename={}'.format(zip_name)}
         # )
    
-        """Crée un ZIP du dossier dataset_cnn et le renvoie en téléchargement."""
-        dataset_dir = "dataset_cnn"
-        
-        if not os.path.exists(dataset_dir) or not os.listdir(dataset_dir):
-            return jsonify({'error': 'no samples found in dataset_cnn'}), 404
+        # Chemin vers le dossier spécifique de la session
+        session_dir = os.path.join("dataset_cnn", session_name)
+    
+        if not os.path.exists(session_dir):
+            return jsonify({'error': 'Session non trouvée'}), 404
 
-        import shutil
-        
-        # 1. On crée une archive temporaire du dossier
-        ts = time.strftime('%Y%m%d_%H%M%S')
-        zip_name = 'sampling_cnn_{}'.format(ts)
-        
-        # shutil.make_archive crée un fichier .zip à partir du dossier
-        # Il crée un fichier nommé 'sampling_cnn_...zip'
-        shutil.make_archive(zip_name, 'zip', dataset_dir)
-        
-        # 2. On lit le fichier généré pour l'envoyer au navigateur
+        # On crée une archive temporaire pour cette session uniquement
+        zip_name = 'download_{}'.format(session_name)
+    
+        # shutil.make_archive(nom_fichier, format, dossier_source)
+        shutil.make_archive(zip_name, 'zip', session_dir)
+    
+        # Lecture et envoi
         with open(zip_name + ".zip", "rb") as f:
-            file_data = f.read()
+        file_data = f.read()
 
-        # 3. On nettoie le fichier temporaire sur le disque
+        # Nettoyage
         os.remove(zip_name + ".zip")
 
         return Response(
             file_data,
             mimetype='application/zip',
-            headers={'Content-Disposition': 'attachment; filename={}.zip'.format(zip_name)}
+            headers={'Content-Disposition': 'attachment; filename={}.zip'.format(session_name)}
         )
 
 
