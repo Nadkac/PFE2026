@@ -2093,7 +2093,7 @@ class controller:
             return jsonify({'error': 'Session non trouvée'}), 404
 
         # On crée une archive temporaire pour cette session uniquement
-       zip_base_name = os.path.join("/tmp", f"download_{session_name}")
+        zip_base_name = os.path.join("/tmp", f"download_{session_name}")
     
         # Création du zip
         shutil.make_archive(zip_base_name, 'zip', session_dir)
