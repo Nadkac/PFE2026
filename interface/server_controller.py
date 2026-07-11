@@ -2099,7 +2099,7 @@ class controller:
         zip_base_name = os.path.join("/tmp", f"download_{self.session_id}")
     
         # Création du zip
-        shutil.make_archive(zip_base_name, 'zip', self.session_id)
+        shutil.make_archive(zip_base_name, 'zip', self.dataset_dir)
         
         zip_file_path = zip_base_name + ".zip"
 
