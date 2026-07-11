@@ -162,13 +162,8 @@ class controller:
         #os.makedirs(self.CAPTURE_DIR, exist_ok=True)
        
         # Nouvelle méthode : Création d'un dossier unique par session
-        self.session_id = datetime.now().strftime("%Y-%m-%d_%Hh%Mm%S")
-        self.dataset_dir = os.path.join("dataset_cnn", f"session_{self.session_id}")
-        os.makedirs(self.dataset_dir, exist_ok=True)
-        
-        print(f"[Sampling] Session initialisée dans : {self.dataset_dir}")
-       
-       
+        self.session_id = None
+        self.dataset_dir = None
        
         # Échantillonnage des données des capteurs
         self.debug_control_sampling = False  # Désactivé par défaut pour réduire l'overhead CPU
@@ -1997,6 +1992,13 @@ class controller:
         """
         if self.sampling_active is True:
             return jsonify({'error': 'Sampling already active'}), 400
+        
+        # Creation d'un dossier spécifique pour cette session d'échantillonnage
+        self.session_id = datetime.now().strftime("%Y-%m-%d_%Hh%Mm%S")
+        self.dataset_dir = os.path.join("dataset_cnn", f"session_{self.session_id}")
+        os.makedirs(self.dataset_dir, exist_ok=True)
+        print(f"[Sampling] Session initialisée dans : {self.dataset_dir}")
+
         # Reset gyro avant chaque séquence pour que les angles IMU
         # repartent de zéro (évite le biais cumulatif de gyro_z)
         try:
