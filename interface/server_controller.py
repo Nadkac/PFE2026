@@ -281,8 +281,8 @@ class controller:
 
 
         current_time = time.time() * 1000 # Conversion en ms pour correspondre au timestamp
-        #if (current_time - self.last_capture_time) < 100:
-        #    return # On ignore ce tick car il est trop tôt
+        if (current_time - self.last_capture_time) < 80:
+            return # On ignore ce tick car il est trop tôt
     
         # On met à jour le compteur seulement si on valide la capture
         self.last_capture_time = current_time
