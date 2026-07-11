@@ -103,6 +103,7 @@ class VisionAdapter:
         """Dimension du vecteur cible : 2 (vitesse gauche, droite)."""
         return 2
 
+    # Vectorise la vision
     def get_state_vector(
         self,
         vision_result: dict,

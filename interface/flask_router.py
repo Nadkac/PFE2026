@@ -58,7 +58,7 @@ def register_routes(ctrl):
     # Routes pour l'onglet control
     app.add_url_rule('/start_sampling', 'start_sampling', lambda: ctrl.start_sampling(), methods=['POST'])
     app.add_url_rule('/stop_sampling', 'stop_sampling', lambda: ctrl.stop_sampling(), methods=['POST'])
-    #app.add_url_rule('/sampling/download', 'sampling_download', lambda: ctrl.download_sampling(), methods=['GET'])
+    app.add_url_rule('/sampling/download', 'sampling_download', lambda: ctrl.download_sampling(), methods=['GET'])
     app.add_url_rule('/sampling/feature_kill', 'sampling_feature_kill', lambda: ctrl.sampling_feature_kill(), methods=['GET', 'POST'])
     app.add_url_rule('/manual/settings', 'manual_settings', lambda: ctrl.manual_settings(), methods=['GET', 'POST'])
     app.add_url_rule('/controller/start', 'controller_start', lambda: ctrl.start_controller(), methods=['POST'])
@@ -116,8 +116,5 @@ def register_routes(ctrl):
     app.add_url_rule('/bridge/green', 'bridge_green', lambda: ctrl.bridge_green(), methods=['POST'])
     app.add_url_rule('/bridge/red', 'bridge_red', lambda: ctrl.bridge_red(), methods=['POST'])
     app.add_url_rule('/bridge/mode_auto/<etat>', 'bridge_mode_auto', lambda etat: ctrl.bridge_mode_auto(etat), methods=['POST'])
-
-    # --- ROUTE POUR LE TELECHARGEMENT DE LA SESSION D'ENTRAINEMENT --- 
-    app.add_url_rule('/download_session/<session_name>', 'download_sampling',view_func=lambda session_name: ctrl.download_sampling(session_name), methods=['GET'])
 
     return app
