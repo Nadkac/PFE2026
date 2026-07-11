@@ -2099,7 +2099,7 @@ class controller:
         zip_base_name = os.path.join("/tmp", f"download_{self.session_id}")
     
         # Création du zip
-        shutil.make_archive(zip_base_name, 'zip', self.dataset_dir)
+        shutil.make_archive(zip_base_name, 'zip', self.session_id)
         
         zip_file_path = zip_base_name + ".zip"
 
@@ -2113,7 +2113,7 @@ class controller:
         return Response(
             file_data,
             mimetype='application/zip',
-            headers={'Content-Disposition': f'attachment; filename={self.dataset_dir}.zip'}
+            headers={'Content-Disposition': f'attachment; filename={self.session_id}.zip'}
         )
 
         pass
