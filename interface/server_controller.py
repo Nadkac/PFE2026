@@ -2086,18 +2086,20 @@ class controller:
         #     headers={'Content-Disposition': 'attachment; filename={}'.format(zip_name)}
         # )
         
-        # Chemin vers le dossier spécifique de la session
-        base_path = "/home/pi/PFE2026/dataset_cnn"
-        session_dir = os.path.join(base_path, self.session_name)
 
-        if not os.path.exists(session_dir):
+        ########## NOUVEAU 
+        # Chemin vers le dossier spécifique de la session
+        #base_path = "/home/pi/PFE2026/dataset_cnn"
+        #session_dir = os.path.join(base_path, self.session_name)
+
+        if not os.path.exists(self.dataset_dir):
             return jsonify({'error': 'Session non trouvée'}), 404
 
         # On crée une archive temporaire pour cette session uniquement
-        zip_base_name = os.path.join("/tmp", f"download_{self.session_name}")
+        zip_base_name = os.path.join("/tmp", f"download_{self.dataset_dir}")
     
         # Création du zip
-        shutil.make_archive(zip_base_name, 'zip', session_dir)
+        shutil.make_archive(zip_base_name, 'zip', self.dataset_dir)
         
         zip_file_path = zip_base_name + ".zip"
 
@@ -2111,7 +2113,7 @@ class controller:
         return Response(
             file_data,
             mimetype='application/zip',
-            headers={'Content-Disposition': f'attachment; filename={self.session_name}.zip'}
+            headers={'Content-Disposition': f'attachment; filename={self.dataset_dir}.zip'}
         )
 
         pass
