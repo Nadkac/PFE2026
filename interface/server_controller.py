@@ -2085,7 +2085,7 @@ class controller:
         #     mimetype='application/zip',
         #     headers={'Content-Disposition': 'attachment; filename={}'.format(zip_name)}
         # )
-        self.se
+        
         # Chemin vers le dossier spécifique de la session
         base_path = "/home/pi/PFE2026/dataset_cnn"
         session_dir = os.path.join(base_path, self.session_name)
