@@ -162,8 +162,8 @@ class controller:
         #os.makedirs(self.CAPTURE_DIR, exist_ok=True)
        
         # Nouvelle méthode : Création d'un dossier unique par session
-        session_id = datetime.now().strftime("%Y-%m-%d_%Hh%Mm%S")
-        self.dataset_dir = os.path.join("dataset_cnn", f"session_{session_id}")
+        self.session_id = datetime.now().strftime("%Y-%m-%d_%Hh%Mm%S")
+        self.dataset_dir = os.path.join("dataset_cnn", f"session_{self.session_id}")
         os.makedirs(self.dataset_dir, exist_ok=True)
         
         print(f"[Sampling] Session initialisée dans : {self.dataset_dir}")
@@ -2089,14 +2089,14 @@ class controller:
 
         ########## NOUVEAU 
         # Chemin vers le dossier spécifique de la session
-        #base_path = "/home/pi/PFE2026/dataset_cnn"
-        #session_dir = os.path.join(base_path, self.session_name)
+        # base_path = "/home/pi/PFE2026/dataset_cnn"
+        # session_dir = os.path.join(base_path, self.session_name)
 
         if not os.path.exists(self.dataset_dir):
             return jsonify({'error': 'Session non trouvée'}), 404
 
         # On crée une archive temporaire pour cette session uniquement
-        zip_base_name = os.path.join("/tmp", f"download_{self.dataset_dir}")
+        zip_base_name = os.path.join("/tmp", f"download_{self.session_id}")
     
         # Création du zip
         shutil.make_archive(zip_base_name, 'zip', self.dataset_dir)
