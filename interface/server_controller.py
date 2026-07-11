@@ -2092,31 +2092,36 @@ class controller:
         # base_path = "/home/pi/PFE2026/dataset_cnn"
         # session_dir = os.path.join(base_path, self.session_name)
 
-        if not os.path.exists(self.dataset_dir):
-            return jsonify({'error': 'Session non trouvée'}), 404
+        dataset_root = "dataset_cnn"
+
+        if not os.path.exists(dataset_root):
+            return jsonify({'error': 'Dossier dataset_cnn non trouvée'}), 404
 
         # On crée une archive temporaire pour cette session uniquement
-        zip_base_name = os.path.join("/tmp", f"download_{self.session_id}")
-    
-        # Création du zip
-        shutil.make_archive(zip_base_name, 'zip', self.dataset_dir)
-        
-        zip_file_path = zip_base_name + ".zip"
+        zip_base_name = "/tmp/dataset_cnn"
+        #os.path.join("/tmp", f"download_{self.session_id}")
 
-        # Lecture et envoi
-        with open(zip_file_path, "rb") as f:
-            file_data = f.read()
+        try:
+            # Création du zip
+            shutil.make_archive(zip_base_name, 'zip', dataset_root)
+            
+            zip_file_path = zip_base_name + ".zip"
 
-        # Nettoyage
-        os.remove(zip_file_path)
+            # Lecture et envoi
+            with open(zip_file_path, "rb") as f:
+                file_data = f.read()
 
-        return Response(
-            file_data,
-            mimetype='application/zip',
-            headers={'Content-Disposition': f'attachment; filename={self.session_id}.zip'}
-        )
-
-        pass
+            return Response(
+                file_data,
+                mimetype='application/zip',
+                headers={'Content-Disposition': f'attachment; filename=dataset_cnn.zip'}
+            )
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+        finally:
+            # Netoyage
+            if os.path.exists(zip_file_path):
+                os.remove(zip_file_path)
     
 
 
