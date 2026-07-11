@@ -328,8 +328,8 @@ class controller:
 
         try:
             # 1. Dossier de destination
-            #dataset_dir = "dataset_cnn"
-            #os.makedirs(dataset_dir, exist_ok=True)
+            dataset_dir = "dataset_cnn"
+            os.makedirs(dataset_dir, exist_ok=True)
             
             # 2. Sauvegarde de l'image (Bitmap -> JPG)
             # On utilise le temps pour un nom unique
