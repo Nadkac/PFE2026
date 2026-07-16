@@ -125,13 +125,6 @@ DRIVE_SPEED = DRIVE_SPEED_DEFAULT
 TURN_SPEED = TURN_SPEED_DEFAULT
 WATCHDOG_TIMEOUT_SECONDS = 0.8
 
-
-def controller_list(self):
-        """Retourne la liste des contrôleurs enregistrés."""
-        if self.control_manager is None:
-            return jsonify({'controllers': []})
-        return jsonify({'controllers': sorted(self.control_manager._controllers.keys())})
-
 class controller:
     def __init__(self, zumi, debug=False):
         self.app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
@@ -2057,7 +2050,12 @@ class controller:
         self.sampling_zeroed_groups = groups
         return jsonify({"status": "ok", "zeroed_groups": sorted(self.sampling_zeroed_groups)})
 
-    
+    def controller_list(self):
+        """Retourne la liste des contrôleurs enregistrés."""
+        if self.control_manager is None:
+            return jsonify({'controllers': []})
+        return jsonify({'controllers': sorted(self.control_manager._controllers.keys())})
+
     def download_sampling(self):
         # """Crée un ZIP avec captures.jsonl et labels.jsonl des échantillons."""
         # if not self.sampling_vectors or not self.sampling_labels:
