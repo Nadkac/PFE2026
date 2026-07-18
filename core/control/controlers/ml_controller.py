@@ -85,39 +85,86 @@ class MLController(ControllerBase):
             self._load_normalization_stats()
 
     def _load_model(self):
-        """Charge le modèle TensorFlow Lite avec configuration optimale."""
-        try:
-            # Charger la config d'environnement si disponible
-            tflite_config = self._load_tflite_config()
+        """Charge le modèle CNN TensorFlow Lite."""
 
-            # Essayer d'abord tflite_runtime (plus léger pour Pi)
-            try:
-                import tflite_runtime.interpreter as tflite
-                self._interpreter = tflite.Interpreter(
-                    model_path=self.model_path,
-                    num_threads=tflite_config.get("num_threads", 4)
+        import traceback
+        from pathlib import Path
+
+        try:
+            model_path = Path(self.model_path)
+
+            print(f"[CNN] Tentative de chargement : {model_path}")
+            print(f"[CNN] Fichier présent         : {model_path.exists()}")
+
+            if not model_path.exists():
+                raise FileNotFoundError(
+                    f"Modèle CNN introuvable : {model_path}"
                 )
+
+            print(f"[CNN] Taille du fichier       : {model_path.stat().st_size} octets")
+
+            if model_path.stat().st_size == 0:
+                raise ValueError(
+                    f"Le fichier TFLite est vide : {model_path}"
+                )
+
+            tflite_config = self._load_tflite_config()
+            num_threads = int(
+                tflite_config.get("num_threads", 3)
+            )
+
+            try:
+                from tflite_runtime.interpreter import Interpreter
+
+                print("[CNN] Runtime : tflite_runtime")
+
+                self._interpreter = Interpreter(
+                    model_path=str(model_path),
+                    num_threads=num_threads
+                )
+
             except ImportError:
-                # Fallback sur tensorflow complet
                 import tensorflow as tf
+
+                print("[CNN] Runtime : TensorFlow Lite")
+
                 self._interpreter = tf.lite.Interpreter(
-                    model_path=self.model_path
+                    model_path=str(model_path),
+                    num_threads=num_threads
                 )
 
             self._interpreter.allocate_tensors()
-            self._input_details = self._interpreter.get_input_details()
-            self._output_details = self._interpreter.get_output_details()
 
-            input_shape = self._input_details[0]['shape']
-            output_shape = self._output_details[0]['shape']
+            self._input_details = (
+                self._interpreter.get_input_details()
+            )
+            self._output_details = (
+                self._interpreter.get_output_details()
+            )
 
-            print(f"[MLController] Modèle chargé: {self.model_path}")
-            print(f"[MLController] Input shape: {input_shape}, Output shape: {output_shape}")
-            print(f"[MLController] TFLite config: threads={tflite_config.get('num_threads', 4)}")
+            print("[CNN] Modèle chargé avec succès")
+            print(
+                "[CNN] Entrée :",
+                self._input_details[0]["shape"],
+                self._input_details[0]["dtype"]
+            )
+            print(
+                "[CNN] Sortie :",
+                self._output_details[0]["shape"],
+                self._output_details[0]["dtype"]
+            )
 
-        except Exception as e:
-            print(f"[MLController] Erreur de chargement du modèle: {e}")
+        except Exception as exc:
+            print(
+                f"[CNN] Échec du chargement : "
+                f"{type(exc).__name__}: {exc}"
+            )
+
+            traceback.print_exc()
+
             self._interpreter = None
+            self._input_details = None
+            self._output_details = None
 
     def _load_tflite_config(self) -> dict:
         """Charge la configuration TFLite depuis le fichier de config d'environnement."""
