@@ -24,15 +24,50 @@ def extract_frame_from_state(state):
     #     return None
 
 def preprocess_frame(frame, input_shape):
-    height = int(input_shape[1])
-    width = int(input_shape[2])
+    """
+    Prépare une frame BGR OpenCV pour un CNN TFLite NCHW.
 
-    frame = cv2.resize(frame, (width, height))
+    Entrée TFLite :
+        [1, 3, height, width]
+    """
+    if frame is None:
+        raise ValueError("Frame caméra absente")
 
-    if frame.ndim == 3 and frame.shape[2] == 3:
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    channels = int(input_shape[1])
+    height = int(input_shape[2])
+    width = int(input_shape[3])
+
+    if channels != 3:
+        raise ValueError(
+            f"Nombre de canaux inattendu : {channels}"
+        )
+
+    frame = cv2.resize(
+        frame,
+        (width, height),
+        interpolation=cv2.INTER_AREA
+    )
+
+    frame = cv2.cvtColor(
+        frame,
+        cv2.COLOR_BGR2RGB
+    )
 
     frame = frame.astype(np.float32) / 255.0
-    frame = np.expand_dims(frame, axis=0)
 
-    return frame
+    # HWC → CHW
+    frame = np.transpose(
+        frame,
+        (2, 0, 1)
+    )
+
+    # CHW → NCHW
+    frame = np.expand_dims(
+        frame,
+        axis=0
+    )
+
+    return np.ascontiguousarray(
+        frame,
+        dtype=np.float32
+    )
