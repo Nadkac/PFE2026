@@ -7,32 +7,21 @@
 #         venv\Scripts\activate           (Windows)
 #         pip install -r requirements.txt
 
-# ───────────────────────────────────────────────
-# Deep Learning
-# ───────────────────────────────────────────────
-torch>=2.1.0
-torchvision>=0.16.0
+# ── Core (entrainement) ──────────────────────────────────────
+torch>=2.0.0
+
+
+
 numpy<=1.26.4
 matplotlib>=3.7.0
 
-# ───────────────────────────────────────────────
-# TensorFlow / TensorFlow Lite
-# ───────────────────────────────────────────────
-tensorflow>=2.15.0
+# ── Conversion vers TFLite ───────────────────────────────────
+tensorflow>=2.13.0
 
-# Conversion PyTorch → TensorFlow Lite
-ai-edge-torch>=0.2.0
 
-# ───────────────────────────────────────────────
-# Analyse
-# ───────────────────────────────────────────────
-scipy>=1.10.0
-scikit-learn>=1.2.0
-pygame>=2.6.0
-psutil>=5.9.0
 
-# ───────────────────────────────────────────────
-# Images
-# ───────────────────────────────────────────────
-opencv-python>=4.8.0
-Pillow>=10.0.0
+# ── Analyse & simulation (optionnel) ────────────────────────
+scipy>=1.10.0            # analyze_dataset.py (spearmanr)
+scikit-learn>=1.2.0      # simulate.py, analyze_dataset.py (ablation features)
+pygame>=2.6.0            # simulator_2d.py (visualisation 2D des trajectoires)
+psutil>=5.9.0            # validate_env.py (detection RAM/CPU)
