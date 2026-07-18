@@ -178,7 +178,7 @@ def bootstrap():
     classes = ['stop_sign', 'Pieton', 'Camion_Pompier']  # 3 classes pour 20 dims input
     adapter = VisionAdapter(320, 240, classes) # Initialisation nécessaire pour le MLController (ATTENTION LA TAILLE DE L'IMAGE EST ARDCODÉ ICI ON DEVRAIT REENDRE SA DYNAMIQUE en fonction du profil de caméra de détection passive)
     MLP_MODELS_DIR = os.path.join(os.path.dirname(__file__), 'core', 'control', 'controlers', 'models')
-    MLP_model_path = os.path.join(MLP_MODELS_DIR, 'zumi_mlp.tflite')
+    MLP_model_path = os.path.join(MLP_MODELS_DIR, 'zumi_cnn.tflite')
 
     # Validation: vérifier que les dimensions correspondent
     print(f"[BOOT] ML Controller:")
