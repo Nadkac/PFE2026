@@ -422,14 +422,25 @@ class MLController(ControllerBase):
 
     #     return output[0]  # Retirer la dimension batch
 
-    def _inference(self, frame) -> np.ndarray:
+    def _inference(self, frame):
         input_shape = self._input_details[0]["shape"]
-        input_data = preprocess_frame(frame, input_shape)
 
-        self._interpreter.set_tensor(self._input_details[0]["index"], input_data)
+        input_data = preprocess_frame(
+            frame,
+            input_shape
+        )
+
+        self._interpreter.set_tensor(
+            self._input_details[0]["index"],
+            input_data
+        )
+
         self._interpreter.invoke()
 
-        output = self._interpreter.get_tensor(self._output_details[0]["index"])
+        output = self._interpreter.get_tensor(
+            self._output_details[0]["index"]
+        )
+
         return output[0]
     
     @property
