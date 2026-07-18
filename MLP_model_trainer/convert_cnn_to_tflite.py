@@ -11,7 +11,6 @@ python .\convert_cnn_to_tflite.py `
     --output ".\cnn_export\zumi_cnn.tflite"
 """
 
-import ai_edge_torch
 import litert_torch
 import argparse
 import json
@@ -79,11 +78,11 @@ def convert_to_tflite(
     """Convertit directement le modèle PyTorch vers TFLite."""
 
     try:
-        import ai_edge_torch
+        import litert_torch
     except ImportError as exc:
         raise ImportError(
-            "Le package ai-edge-torch n'est pas installé.\n"
-            "Commande : python -m pip install ai-edge-torch"
+            "Le package litert-torch n'est pas installé.\n"
+            "Commande : python -m pip install litert-torch"
         ) from exc
 
     output_path.parent.mkdir(
@@ -104,7 +103,7 @@ def convert_to_tflite(
 
     print(f"  Sortie PyTorch   : {tuple(torch_output.shape)}")
 
-    edge_model = ai_edge_torch.convert(
+    edge_model = litert_torch.convert(
         model.eval(),
         (sample_input,)
     )
