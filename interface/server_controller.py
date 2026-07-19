@@ -569,19 +569,26 @@ class controller:
         overlay_mode = request.args.get('overlay', '')
         
         def generate():
-            frame_counter  = 0
+            frame_counter = 0
             previous_distance = None
-            
+            previous_frame_id = -1
+
             while vp.is_running():
-                try:
-                    frame_bgr = vp.camera.capture()
-                    if frame_bgr is None:
-                        time.sleep(0.1)
-                        continue
-                    vp.update_last_frame(frame_bgr)
-                except Exception:
-                    time.sleep(0.1)
+                frame_id = vp.get_frame_id()
+
+                # Éviter d'envoyer plusieurs fois la même image
+                if frame_id == previous_frame_id:
+                    time.sleep(0.005)
                     continue
+
+                frame_bgr = vp.get_last_frame()
+
+                if frame_bgr is None:
+                    time.sleep(0.02)
+                    continue
+
+                previous_frame_id = frame_id
+                frame_counter += 1
 
                 # --- Déclencher la détection passive selon detection_rate ---
                 if vp._passive_running:

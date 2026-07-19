@@ -569,6 +569,7 @@ class MLController(ControllerBase):
         image caméra → CNN TFLite → [left_motor, right_motor]
         """
         frame = extract_frame_from_state(state)
+        frame_id = getattr(state, "frame_id", None)
 
         checksum = zlib.crc32(frame.tobytes())
 
@@ -581,12 +582,16 @@ class MLController(ControllerBase):
 
         if self._inference_count % 20 == 0:
             print(
-                f"[CNN FRAME] {frame_status} | "
-                f"checksum={checksum} | "
-                f"changes={self._frame_change_count} | "
-                f"shape={frame.shape} | "
-                f"mean={frame.mean():.2f} | "
-                f"std={frame.std():.2f}"
+                "[CNN FRAME] {} | frame_id={} | checksum={} | "
+                "changes={} | shape={} | mean={:.2f} | std={:.2f}".format(
+                    frame_status,
+                    getattr(state, "frame_id", None),
+                    checksum,
+                    self._frame_change_count,
+                    frame.shape,
+                    frame.mean(),
+                    frame.std()
+                )
             )
 
         if frame is None:

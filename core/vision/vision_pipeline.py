@@ -32,6 +32,10 @@ class VisionPipeline:
         # Buffer de la dernière image et protection de concurrence
         self._lock = threading.Lock()
         self._last_frame = None
+        self._frame_id = 0
+        # Thread centralisé de capture caméra
+        self._capture_thread = None
+        self._capture_interval = 1.0 / 20.0
         # threads pour la détection passive
         self._passive_thread = None         # instance du thread
         self._passive_running = False       # Flag pour contrôler l'exécution du thread
@@ -59,15 +63,34 @@ class VisionPipeline:
             detector.attach_capture_dir(capture_dir)
 
     def start(self):
-        """ appeler pour démarrer le pipeline de vision """
+        """Démarre la caméra et la boucle centralisée de capture."""
         if self.running:
             return
+
         try:
+            # Effacer l'ancienne frame avant un nouveau démarrage
+            with self._lock:
+                self._last_frame = None
+                self._frame_id = 0
+
             self.camera.start_camera()
             self.running = True
-        except Exception as e:
+
+            self._capture_thread = threading.Thread(
+                target=self._capture_loop,
+                name="CameraCaptureLoop",
+                daemon=True
+            )
+            self._capture_thread.start()
+
             if self.debug:
-                print("Erreur lors du demarrage du pipeline de vision: {}".format(e))
+                print("[VisionPipeline] Caméra et capture démarrées")
+
+        except Exception as exc:
+            self.running = False
+            print(
+                "[VisionPipeline] Erreur démarrage : {}".format(exc)
+            )
 
     def step(self):
         """
@@ -113,17 +136,26 @@ class VisionPipeline:
         return results
 
     def stop(self):
-        """ appeler pour arrêter le pipeline de vision """
-        # Signaler l'arrêt AVANT de fermer la caméra
-        # pour que le générateur vidéo s'arrête proprement
+        """Arrête la boucle de capture puis ferme la caméra."""
         self.running = False
-        time.sleep(0.15)  # Laisser le générateur vidéo terminer son cycle
+
+        if self._capture_thread is not None:
+            self._capture_thread.join(timeout=1.0)
+            self._capture_thread = None
+
         try:
             self.camera.close()
-            time.sleep(0.1)  # Laisser un peu de temps pour que la caméra se libère complètement
-        except Exception as e:
+        except Exception as exc:
             if self.debug:
-                print("Erreur lors de l'arret du pipeline de vision: {}".format(e))
+                print(
+                    "[VisionPipeline] Erreur fermeture caméra : {}".format(exc)
+                )
+
+        with self._lock:
+            self._last_frame = None
+            self._frame_id = 0
+
+        time.sleep(0.1)
         
     def add_detectors(self, detectors):
         """ ajouter un détecteur au pipeline de vision """
@@ -208,14 +240,16 @@ class VisionPipeline:
                 self._last_frame = frame
 
     def get_last_frame(self):
-        """Retourne une copie de la dernière image si disponible, sinon None (thread-safe)."""
+        """Retourne une copie de la dernière image."""
         with self._lock:
             if self._last_frame is None:
                 return None
-            try:
-                return self._last_frame.copy()
-            except Exception:
-                return self._last_frame
+
+            return self._last_frame.copy()
+        
+    def get_frame_id(self):
+        with self._lock:
+            return self._frame_id
 
     def change_camera_resolution(self, width, height):
         """
@@ -696,3 +730,43 @@ class VisionPipeline:
             self._mining_counts.clear()
         if self.debug:
             print("[Mining] {} crops supprimés".format(len(files)))
+
+    def _capture_loop(self):
+        """
+        Capture continuellement les images de la caméra.
+
+        Cette boucle est l'unique producteur d'images.
+        Le flux Web, le CNN et les détecteurs lisent ensuite _last_frame.
+        """
+        print("[VisionPipeline] Boucle de capture démarrée")
+
+        while self.running:
+            try:
+                frame = self.camera.capture()
+
+                if frame is None:
+                    time.sleep(0.02)
+                    continue
+
+                with self._lock:
+                    self._last_frame = frame.copy()
+                    self._frame_id += 1
+
+                # Réveiller périodiquement la détection passive
+                if (
+                    self._passive_running
+                    and self._frame_id % self._detection_rate == 0
+                ):
+                    self._detection_trigger.set()
+
+            except Exception as exc:
+                if self.debug:
+                    print(
+                        "[VisionPipeline] Erreur capture : {}".format(exc)
+                    )
+
+                time.sleep(0.05)
+
+            time.sleep(self._capture_interval)
+
+        print("[VisionPipeline] Boucle de capture arrêtée")
