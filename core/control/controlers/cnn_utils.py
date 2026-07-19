@@ -9,7 +9,12 @@ import numpy as np
 
 
 def extract_frame_from_state(state):
-    return state.frame
+    frame = getattr(state, "frame", None)
+
+    if frame is None:
+        return None
+
+    return frame.copy()
 
     # def extract_frame_from_state(state):
     #     """

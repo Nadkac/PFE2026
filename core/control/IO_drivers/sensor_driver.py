@@ -50,6 +50,7 @@ class SensorDriver:
 
         # ── Vision ──────────────────────────────────
         frame = None
+        frame_id = 0
         line_offset = None
         line_detected = False
         detections = None
@@ -70,6 +71,7 @@ class SensorDriver:
 
         if self.vision_pipeline is not None:
             frame = self.vision_pipeline.get_last_frame()
+            frame_id = self.vision_pipeline.get_frame_id()
 
             # Détection de ligne (multi-zones)
             if Line_detection and frame is not None and self._line_detector_index is not None:
@@ -124,6 +126,7 @@ class SensorDriver:
         return SensorState(
             timestamp=now,
             frame=frame,
+            frame_id=frame_id,
             line_offset=line_offset,
             line_detected=line_detected,
             detections=detections,

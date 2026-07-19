@@ -59,6 +59,7 @@ class SensorState:
         self,
         timestamp=None,
         frame=None,
+        frame_id=0,
         line_offset=None,
         line_detected=False,
         detections=None,

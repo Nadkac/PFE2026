@@ -571,6 +571,14 @@ class MLController(ControllerBase):
         frame = extract_frame_from_state(state)
         frame_id = getattr(state, "frame_id", None)
 
+        frame = extract_frame_from_state(state)
+
+        if frame is None:
+            return MotorCommand(
+                left_speed=0.0,
+                right_speed=0.0
+            )
+
         checksum = zlib.crc32(frame.tobytes())
 
         if checksum != self._previous_frame_checksum:
