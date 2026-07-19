@@ -11,6 +11,7 @@ et convertit la sortie en MotorCommand.
 
 import collections
 import numpy as np
+import zlib
 from core.control.controlers.controller_base import ControllerBase
 from core.control.IO_drivers.motor_command import MotorCommand
 from core.control.controlers.cnn_utils import extract_frame_from_state, preprocess_frame
@@ -79,6 +80,9 @@ class MLController(ControllerBase):
         self._last_input = None
         self._last_output = None
         self._inference_count = 0
+
+        self._previous_frame_checksum = None
+        self._frame_change_count = 0
 
         if self.model_path:
             self._load_model()
@@ -565,6 +569,25 @@ class MLController(ControllerBase):
         image caméra → CNN TFLite → [left_motor, right_motor]
         """
         frame = extract_frame_from_state(state)
+
+        checksum = zlib.crc32(frame.tobytes())
+
+        if checksum != self._previous_frame_checksum:
+            self._frame_change_count += 1
+            self._previous_frame_checksum = checksum
+            frame_status = "NOUVELLE"
+        else:
+            frame_status = "IDENTIQUE"
+
+        if self._inference_count % 20 == 0:
+            print(
+                f"[CNN FRAME] {frame_status} | "
+                f"checksum={checksum} | "
+                f"changes={self._frame_change_count} | "
+                f"shape={frame.shape} | "
+                f"mean={frame.mean():.2f} | "
+                f"std={frame.std():.2f}"
+            )
 
         if frame is None:
             print("[MLController] Aucune image caméra disponible")
