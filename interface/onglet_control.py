@@ -1222,12 +1222,10 @@ def render_control_tab(title: str = "Contrôle") -> str:
         const gp = gamepads[0];
         if (!gp) return;
 
-        let buttonsValues = gp.buttons.map((btn, index) => `Btn[${index}]: ${btn.value.toFixed(2)}`).join(" | ");
-
         # // Throttle
         # let throttle = 0.0;
-        # let rightTrigger = gp.axes[7] ? gp.axes[7] : 0.0; // Axe 7 pour le trigger droit
-        # let leftTrigger = gp.axes[6] ? gp.axes[6] : 0.0;  // Axe 6 pour le trigger gauche
+        # let rightTrigger = gp.axes[5] ? gp.axes[5] : 0.0; // Axe 5 pour le trigger droit
+        # let leftTrigger = gp.axes[4] ? gp.axes[4] : 0.0;  // Axe 4 pour le trigger gauche
         # const triggerDeadzone = 0.05; // Zone morte pour les triggers
 
         # // Protection : Si les deux gâchettes sont pressées en même temps
