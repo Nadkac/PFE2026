@@ -1223,6 +1223,7 @@ def render_control_tab(title: str = "Contrôle") -> str:
         if (!gp) return;
 
         // Throttle
+        let throttle = 0.0;
         let rightTrigger = gp.axes[7] ? gp.axes[7] : 0.0; // Axe 7 pour le trigger droit
         let leftTrigger = gp.axes[6] ? gp.axes[6] : 0.0;  // Axe 6 pour le trigger gauche
         const triggerDeadzone = 0.05; // Zone morte pour les triggers
