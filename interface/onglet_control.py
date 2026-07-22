@@ -1222,14 +1222,16 @@ def render_control_tab(title: str = "Contrôle") -> str:
         const gp = gamepads[0];
         if (!gp) return;
 
-        let axe3 = gp.axes[3] ? gp.axes[3] : 0.0;
-        let axe4 = gp.axes[4] ? gp.axes[4] : 0.0;
-        let axe5 = gp.axes[5] ? gp.axes[5] : 0.0;
-        let axe6 = gp.axes[6] ? gp.axes[6] : 0.0;
-        let axe7 = gp.axes[7] ? gp.axes[7] : 0.0;
-        let axe8 = gp.axes[8] ? gp.axes[8] : 0.0;
+        let btn1 = gp.buttons[1] ? gp.buttons[1].value : 0.0;
+        let btn2 = gp.buttons[2] ? gp.buttons[2].value : 0.0;
+        let btn3 = gp.buttons[3] ? gp.buttons[3].value : 0.0;
+        let btn4 = gp.buttons[4] ? gp.buttons[4].value : 0.0;
+        let btn5 = gp.buttons[5] ? gp.buttons[5].value : 0.0;
+        let btn6 = gp.buttons[6] ? gp.buttons[6].value : 0.0;
+        let btn7 = gp.buttons[7] ? gp.buttons[7].value : 0.0;
+        let btn8 = gp.buttons[8] ? gp.buttons[8].value : 0.0;
 
-        console.log('axe3 %c, axe4 %c, axe5 %c, axe6 %c, axe7 %c, axe8 %c', axe3, axe4, axe5, axe6, axe7, axe8);
+        console.log('btn1', btn1, 'btn2', btn2, 'btn3', btn3, 'btn4', btn4, 'btn5', btn5, 'btn6', btn6, 'btn7', btn7, 'btn8', btn8);
 
         // Throttle
         let throttle = 0.0;
