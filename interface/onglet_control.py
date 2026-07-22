@@ -1222,21 +1222,10 @@ def render_control_tab(title: str = "Contrôle") -> str:
         const gp = gamepads[0];
         if (!gp) return;
 
-        let btn1 = gp.buttons[1] ? gp.buttons[1].value : 0.0;
-        let btn2 = gp.buttons[2] ? gp.buttons[2].value : 0.0;
-        let btn3 = gp.buttons[3] ? gp.buttons[3].value : 0.0;
-        let btn4 = gp.buttons[4] ? gp.buttons[4].value : 0.0;
-        let btn5 = gp.buttons[5] ? gp.buttons[5].value : 0.0;
-        let btn6 = gp.buttons[6] ? gp.buttons[6].value : 0.0;
-        let btn7 = gp.buttons[7] ? gp.buttons[7].value : 0.0;
-        let btn8 = gp.buttons[8] ? gp.buttons[8].value : 0.0;
-
-        console.log('btn1', btn1, 'btn2', btn2, 'btn3', btn3, 'btn4', btn4, 'btn5', btn5, 'btn6', btn6, 'btn7', btn7, 'btn8', btn8);
-
         // Throttle
         let throttle = 0.0;
-        let rightTrigger = gp.axes[5] ? gp.axes[5] : 0.0; // Axe 5 pour le trigger droit
-        let leftTrigger = gp.axes[4] ? gp.axes[4] : 0.0;  // Axe 4 pour le trigger gauche
+        let rightTrigger = gp.buttons[7] ? gp.buttons[7].value : 0.0; // Bouton 7 pour le trigger droit
+        let leftTrigger = gp.buttons[6] ? gp.buttons[6].value : 0.0;  // Bouton 6 pour le trigger gauche
         const triggerDeadzone = 0.05; // Zone morte pour les triggers
 
         // Protection : Si les deux gâchettes sont pressées en même temps
