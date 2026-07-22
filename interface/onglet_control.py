@@ -1222,22 +1222,22 @@ def render_control_tab(title: str = "Contrôle") -> str:
         const gp = gamepads[0];
         if (!gp) return;
 
-        # // Throttle
-        # let throttle = 0.0;
-        # let rightTrigger = gp.axes[5] ? gp.axes[5] : 0.0; // Axe 5 pour le trigger droit
-        # let leftTrigger = gp.axes[4] ? gp.axes[4] : 0.0;  // Axe 4 pour le trigger gauche
-        # const triggerDeadzone = 0.05; // Zone morte pour les triggers
+        // Throttle
+        let throttle = 0.0;
+        let rightTrigger = gp.axes[5] ? gp.axes[5] : 0.0; // Axe 5 pour le trigger droit
+        let leftTrigger = gp.axes[4] ? gp.axes[4] : 0.0;  // Axe 4 pour le trigger gauche
+        const triggerDeadzone = 0.05; // Zone morte pour les triggers
 
-        # // Protection : Si les deux gâchettes sont pressées en même temps
-        # if (rightTrigger > triggerDeadzone && leftTrigger > triggerDeadzone) {
-        #     throttle = 0.0; // S'annulent mutuellement (pas d'accélération)
-        # } 
-        # else if (rightTrigger > triggerDeadzone) {
-        #     throttle = rightTrigger; // Avancer
-        # } 
-        # else if (leftTrigger > triggerDeadzone) {
-        #     throttle = -leftTrigger; // Reculer
-        # }
+        // Protection : Si les deux gâchettes sont pressées en même temps
+        if (rightTrigger > triggerDeadzone && leftTrigger > triggerDeadzone) {
+            throttle = 0.0; // S'annulent mutuellement (pas d'accélération)
+        } 
+        else if (rightTrigger > triggerDeadzone) {
+            throttle = rightTrigger; // Avancer
+        } 
+        else if (leftTrigger > triggerDeadzone) {
+            throttle = -leftTrigger; // Reculer
+        }
 
         // Steering
         let rawSteering = gp.axes[0];            
