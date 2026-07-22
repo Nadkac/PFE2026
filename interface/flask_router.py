@@ -54,6 +54,7 @@ def register_routes(ctrl):
     app.add_url_rule('/zumi/stop', 'stop', lambda: ctrl.stop())
     app.add_url_rule('/zumi/turn', 'manual_turn', lambda: ctrl.manual_turn(), methods=['POST'])
     app.add_url_rule('/zumi/move', 'move', lambda: ctrl.move(), methods=['POST'])
+    app.add_url_rule('/zumi/joystick', 'joystick', lambda: ctrl.joystick(), methods=['POST'])
 
     # Routes pour l'onglet control
     app.add_url_rule('/start_sampling', 'start_sampling', lambda: ctrl.start_sampling(), methods=['POST'])

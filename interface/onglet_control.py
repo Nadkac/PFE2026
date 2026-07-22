@@ -1195,6 +1195,56 @@ def render_control_tab(title: str = "Contrôle") -> str:
         }
     }
 
+    // --- CONTROLE PAR MANETTE (Gamepad) ---  ajout PFE2026
+    var gamepadInterval = null;
+
+    window.addEventListener('gamepadconnected', function(e) {
+        console.log('Gamepad connected:', e.gamepad);
+        if (!gamepadInterval) {
+            gamepadInterval = setInterval(pollGamepad, 33); // ~30Hz
+        }
+    });
+
+    window.addEventListener('gamepaddisconnected', function(e) {
+        console.log('Gamepad disconnected:', e.gamepad);
+        if (gamepadInterval) {
+            clearInterval(gamepadInterval);
+            gamepadInterval = null;
+        }
+    });
+
+    function pollGamepad() {
+        const gamepads = navigator.getGamepads();
+        if (!gamepads) return;
+
+        // Prend la première manette disponible
+        const gp = gamepads[0];
+        if (!gp) return;
+
+        // Lecture des axes analogiques
+        let rawThrottle = gp.axes[1]; 
+        let rawSteering = gp.axes[0];            
+
+        // Zone morte 
+        const deadzone = 0.15;
+        let throttle = Math.abs(rawThrottle) > deadzone ? -rawThrottle : 0.0;
+        let steering = Math.abs(rawSteering) > deadzone ? rawSteering : 0.0;
+        
+        // Envoi des commandes analogiques au serveur Flask du robot
+        fetch('/zumi/joystick', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                throttle: throttle,
+                steering: steering
+            })
+        }).catch(err => {
+            console.error('Gamepad fetch error:', err);
+        });
+    }
+
     // --- RESET CAPTEURS ---
     function postReset(url, btn) {
         var originalText = btn.textContent;

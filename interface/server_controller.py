@@ -1402,6 +1402,23 @@ class controller:
             print("[Sampling] Erreur dans échantillonnage composé: {}".format(e))
 
     # ------------------------------------------------------------------
+    #  Contrôle manette  - ajout PFE2026
+    # ------------------------------------------------------------------
+
+    def joystick(self):
+        """Endpoint POST /zumi/joystick pour le contrôle par manette.
+
+        Reçoit un JSON {"throttle", "steering":} 
+        et délègue au gestionnaire d'action.
+        """
+        data = request.get_json(silent=True) or {}
+        
+        throttle = float(data.get('throttle', 0.0))
+        steering = float(data.get('steering', 0.0))
+        return self._dispatch_compound_action(throttle, steering)
+
+
+    # ------------------------------------------------------------------
     #  Reset capteurs / PID
     # ------------------------------------------------------------------
 
