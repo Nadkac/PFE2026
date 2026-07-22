@@ -1197,6 +1197,7 @@ def render_control_tab(title: str = "Contrôle") -> str:
 
     // --- CONTROLE PAR MANETTE (Gamepad) ---  ajout PFE2026
     var gamepadInterval = null;
+    var wasStopped = false;
 
     window.addEventListener('gamepadconnected', function(e) {
         console.log('Gamepad connected:', e.gamepad);
@@ -1226,23 +1227,33 @@ def render_control_tab(title: str = "Contrôle") -> str:
         let rawSteering = gp.axes[0];            
 
         // Zone morte 
-        const deadzone = 0.15;
-        let throttle = Math.abs(rawThrottle) > deadzone ? -rawThrottle : 0.0;
+        const deadzone = 0.1;
+        let throttle = Math.abs(rawThrottle) > deadzone ? rawThrottle : 0.0;
         let steering = Math.abs(rawSteering) > deadzone ? rawSteering : 0.0;
         
-        // Envoi des commandes analogiques au serveur Flask du robot
-        fetch('/zumi/joystick', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                throttle: throttle,
-                steering: steering
+        if (throttle != 0 ) {
+            wasStopped = false;
+            // Envoi des commandes analogiques au serveur Flask du robot
+            fetch('/zumi/joystick', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    throttle: throttle,
+                    steering: steering
+                })
             })
-        }).catch(err => {
-            console.error('Gamepad fetch error:', err);
-        });
+            .catch(err => console.error('Gamepad fetch error:', err));
+        }
+        else if (!wasStopped) {
+            // Si le joystick est relâché, envoyer un stop une seule fois
+            fetch('/zumi/joystick_stop', {
+                method: 'POST'
+            })
+            .catch(err => console.error('Gamepad stop fetch error:', err));
+            wasStopped = true;
+        }
     }
 
     // --- RESET CAPTEURS ---

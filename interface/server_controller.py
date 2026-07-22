@@ -1417,6 +1417,18 @@ class controller:
         steering = float(data.get('steering', 0.0))
         return self._dispatch_compound_action(throttle, steering)
 
+    def joystick_stop(self):
+        try:
+            # Si un override manuel est actif, on le nettoie
+            if self.control_manager and self.control_manager.manual_override_active:
+                self.control_manager.clear_manual_override()
+                return "ok"
+            
+            # Sinon, on force les vitesses à 0 via le dispatch manuel
+            return self._dispatch_manual_action("stop", 0)
+        except Exception as e:
+            print("[ERREUR] joystick_stop:", e)
+            return "error", 500
 
     # ------------------------------------------------------------------
     #  Reset capteurs / PID
