@@ -1261,6 +1261,7 @@ def render_control_tab(title: str = "Contrôle") -> str:
                     throttle: throttle,
                     steering: steering
                 })
+                console.log( throttle, steering);
             })
             .catch(err => console.error('Gamepad fetch error:', err));
         }
