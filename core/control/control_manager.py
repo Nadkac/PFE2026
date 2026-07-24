@@ -263,7 +263,7 @@ class ControlManager:
                 # - Manuel: 33ms (30 Hz) - tick léger, peut aller plus vite pour une meilleure réactivité aux commandes web
                 # - ML/autres: 50ms (20 Hz) - marge pour inférence TFLite
                 if isinstance(self._active_controller, ManualController):
-                    time.sleep(0.0033)
+                    time.sleep(0.01)
                 else:
                     time.sleep(self._loop_delay)
 
