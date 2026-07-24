@@ -26,7 +26,7 @@ from core.hardware.personality import Personality
 
 # === Constantes de contrôle centralisées ===
 # Ces valeurs sont la source unique de vérité pour tout le projet.
-DRIVE_SPEED_DEFAULT = 7    # Vitesse par défaut avance/recul
+DRIVE_SPEED_DEFAULT = 8    # Vitesse par défaut avance/recul
 TURN_SPEED_DEFAULT = 1     # Vitesse par défaut virages
 
 # Constantes legacy (pour compatibilité, utilisent les nouvelles valeurs)
