@@ -1250,6 +1250,7 @@ def render_control_tab(title: str = "Contrôle") -> str:
         let steering = Math.abs(rawSteering) > deadzone ? rawSteering : 0.0;
         
         if (throttle != 0 || steering != 0) {
+            console.log( 'throttle:', throttle, 'steering:', steering);
             wasStopped = false;
             // Envoi des commandes analogiques au serveur Flask du robot
             fetch('/zumi/joystick', {
@@ -1261,7 +1262,6 @@ def render_control_tab(title: str = "Contrôle") -> str:
                     throttle: throttle,
                     steering: steering
                 })
-                console.log( throttle, steering);
             })
             .catch(err => console.error('Gamepad fetch error:', err));
         }
