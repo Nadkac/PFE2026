@@ -1227,6 +1227,7 @@ def render_control_tab(title: str = "Contrôle") -> str:
         let rightTrigger = gp.buttons[7] ? gp.buttons[7].value : 0.0; // Bouton 7 pour le trigger droit
         let leftTrigger = gp.buttons[6] ? gp.buttons[6].value : 0.0;  // Bouton 6 pour le trigger gauche
         const triggerDeadzone = 0.05; // Zone morte pour les triggers
+        const MinSpeed = 0.1; // Vitesse minimale
 
         // Protection : Si les deux gâchettes sont pressées en même temps
         if (rightTrigger > triggerDeadzone && leftTrigger > triggerDeadzone) {
@@ -1234,19 +1235,21 @@ def render_control_tab(title: str = "Contrôle") -> str:
         } 
         else if (rightTrigger > triggerDeadzone) {
             throttle = rightTrigger; // Avancer
+            if (throttle < MinSpeed) throttle = MinSpeed;
         } 
         else if (leftTrigger > triggerDeadzone) {
             throttle = -leftTrigger; // Reculer
+            if (throttle > -MinSpeed) throttle = -MinSpeed;
         }
 
         // Steering
         let rawSteering = gp.axes[0];            
 
         // Zone morte 
-        const deadzone = 0.1;
+        const deadzone = 0.05;
         let steering = Math.abs(rawSteering) > deadzone ? rawSteering : 0.0;
         
-        if (throttle != 0 ) {
+        if (throttle != 0 || steering != 0) {
             wasStopped = false;
             // Envoi des commandes analogiques au serveur Flask du robot
             fetch('/zumi/joystick', {
