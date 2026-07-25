@@ -446,6 +446,7 @@ class SensorProfiler:
                 "imu": list(imu) if imu else None,
             })
             time.sleep(0.02)  # ~50Hz
+            print("[SensorProfiler] Delay record_static")
 
         # Calculer les statistiques
         ir_arr = np.array([s["ir"] for s in samples if s["ir"] is not None], dtype=np.float64)
@@ -540,6 +541,7 @@ class SensorProfiler:
                     "t": len(self._manual_samples) * 0.05,
                 })
                 time.sleep(0.05)
+                print("[SensorProfiler] Delay record_loop")
 
         self._record_thread = threading.Thread(target=_record_loop, daemon=True)
         self._record_thread.start()

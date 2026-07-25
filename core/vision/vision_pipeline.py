@@ -746,6 +746,7 @@ class VisionPipeline:
 
                 if frame is None:
                     time.sleep(0.02)
+                    print("[VisionPipeline] Delay capture: frame nulle")
                     continue
 
                 with self._lock:
@@ -766,6 +767,7 @@ class VisionPipeline:
                     )
 
                 time.sleep(0.05)
+                print("[VisionPipeline] Delay Erreur capture")
 
             time.sleep(self._capture_interval)
 

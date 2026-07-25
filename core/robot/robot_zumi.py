@@ -234,6 +234,7 @@ class RobotZumi(RobotBase):
             # Calibration MPU + gyro
             self.zumi.calibrate_gyro()
             time.sleep(0.5)
+            print("[RobotZumi] Delay calibrate sensors")
             self.zumi.mpu.calibrate_MPU(count=500)
             time.sleep(0.5)
 

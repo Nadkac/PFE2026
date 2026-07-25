@@ -579,12 +579,14 @@ class controller:
                 # Éviter d'envoyer plusieurs fois la même image
                 if frame_id == previous_frame_id:
                     time.sleep(0.005)
+                    print("[ServerController] Delay Video feed 1")
                     continue
 
                 frame_bgr = vp.get_last_frame()
 
                 if frame_bgr is None:
                     time.sleep(0.02)
+                    print("[ServerController] Delay Video feed 2")
                     continue
 
                 previous_frame_id = frame_id
@@ -693,6 +695,7 @@ class controller:
                 yield (b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
                 
                 time.sleep(1.0 / self.livefeed_fps)
+                print("[ServerController] Delay Video feed 3")
 
         return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
@@ -1548,6 +1551,7 @@ class controller:
                 timeout = _time.time() + duration + 5.0
                 while not ctrl.is_done and _time.time() < timeout:
                     _time.sleep(0.1)
+                    print("[ServerController] Delay Video feed 4")
                 self.control_manager.deactivate_controller()
                 ctrl.clear_maneuver()
                 self._sensor_profiler.collect_auto_results()
@@ -1799,6 +1803,7 @@ class controller:
                 frame = vp.get_last_frame()
                 if frame is None:
                     time.sleep(0.05)
+                    print("[ServerController] Delay Video feed 5")
                     continue
 
                 result = det.process(frame.copy())
@@ -1810,6 +1815,7 @@ class controller:
                         self.control_manager._motor_driver.execute(MotorCommand.stop())
                     self.last_line_offset = 0
                     time.sleep(0.05)
+                    print("[ServerController] Delay Video feed 6")
                     continue
 
                 self.last_line_offset = line_offset
@@ -1824,6 +1830,7 @@ class controller:
                         self.control_manager._motor_driver.execute(MotorCommand.make_turn(angle))
                         # Petite pause après la rotation pour laisser le robot se stabiliser
                         time.sleep(0.15)
+                        print("[ServerController] Delay Video feed 6")
                     else:
                         self.last_correction = 0
                 else:
@@ -1842,6 +1849,7 @@ class controller:
                 import traceback
                 traceback.print_exc()
                 time.sleep(0.1)
+                print("[ServerController] Delay Video feed 7")
 
         # Nettoyage à la sortie
         if self.control_manager and self.control_manager._motor_driver:
@@ -1860,6 +1868,7 @@ class controller:
             if vp:
                 vp.start()
                 time.sleep(0.3)
+                print("[ServerController] Delay Video feed 8")
             else:
                 return jsonify({'error': 'Vision pipeline non initialisé'}), 400
 
@@ -1917,12 +1926,15 @@ class controller:
                 frame = vp.get_last_frame() if vp else None
                 if frame is None:
                     time.sleep(0.05)
+                    print("[ServerController] Delay Video feed 8")
                     continue
                 self.step_machine.step(frame.copy())
                 time.sleep(0.05)
+                print("[ServerController] Delay Video feed 9")
             except Exception as e:
                 print("[StepMode] Erreur: {}".format(e))
                 time.sleep(0.1)
+                print("[ServerController] Delay Video feed 10")
         print("[StepMode] Boucle de fond terminée")
 
 # ----------------------------------------------------------------------------
