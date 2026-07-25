@@ -268,7 +268,7 @@ class ManualController(ControllerBase):
                 self.default_speed, self.turn_speed, self.steering_ratio
             )
             left, right = self.apply_heading_correction(state, base_left, base_right)
-            self._record_cnn_sample(state, left, right)
+            #self._record_cnn_sample(state, left, right)
             return MotorCommand.make_speed(left, right)
 
         # 4. Rotation sur place avec PWM logiciel (A/D seuls)
@@ -276,9 +276,9 @@ class ManualController(ControllerBase):
             self._turn_tick += 1
             active = (self._turn_tick % (self.turn_duty_on + self.turn_duty_off)) < self.turn_duty_on
             if not active:
-                self._record_cnn_sample(state, 0, 0)
+                #self._record_cnn_sample(state, 0, 0)
                 return MotorCommand.stop()
-            self._record_cnn_sample(state, left, right)
+            #self._record_cnn_sample(state, left, right)
             return MotorCommand.make_speed(
                 self._steering * self.turn_speed,
                 -self._steering * self.turn_speed
@@ -291,9 +291,9 @@ class ManualController(ControllerBase):
         )
 
         if left == 0 and right == 0:
-            self._record_cnn_sample(state, 0, 0)
+            #self._record_cnn_sample(state, 0, 0)
             return MotorCommand.stop()
-        self._record_cnn_sample(state, left, right)
+        #self._record_cnn_sample(state, left, right)
         return MotorCommand.make_speed(left, right)
 
     # ------------------------------------------------------------------
