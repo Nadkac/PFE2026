@@ -695,8 +695,8 @@ class controller:
                 yield (b'--frame\r\n'b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
                 
                 #time.sleep(1.0 / self.livefeed_fps)
-                time.sleep(0.01)
-                print("[ServerController] Delay Video feed 3")
+                time.sleep(0.001)
+                #print("[ServerController] Delay Video feed 3")
 
         return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
