@@ -579,7 +579,7 @@ class controller:
                 # Éviter d'envoyer plusieurs fois la même image
                 if frame_id == previous_frame_id:
                     time.sleep(0.005)
-                    print("[ServerController] Delay Video feed 1")
+                    #print("[ServerController] Delay Video feed 1")
                     continue
 
                 frame_bgr = vp.get_last_frame()
